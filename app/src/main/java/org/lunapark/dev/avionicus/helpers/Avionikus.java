@@ -1,7 +1,5 @@
 package org.lunapark.dev.avionicus.helpers;
 
-import org.lunapark.dev.avionicus.helpers.ATrack;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +13,7 @@ public class Avionikus {
     private String sMsgTitle;
     private Boolean bStateError;
     private Object minId;
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, String> additionalProperties = new HashMap<String, String>();
 
     public List<Object> getAWaypoints() {
         return aWaypoints;
@@ -73,11 +71,11 @@ public class Avionikus {
         this.minId = minId;
     }
 
-    public Map<String, Object> getAdditionalProperties() {
+    public Map<String, String> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
-    public void setAdditionalProperty(String name, Object value) {
+    public void setAdditionalProperty(String name, String value) {
         this.additionalProperties.put(name, value);
     }
 

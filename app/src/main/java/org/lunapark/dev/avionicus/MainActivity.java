@@ -86,9 +86,9 @@ public class MainActivity extends Activity implements EventListener {
                 GeoPoint geoPoint = new GeoPoint(points.get(0), points.get(1));
                 double speed = points.get(5);
                 int color = Color.rgb(64, 224, 208);
-                if (speed > 5 && speed < 10) color = Color.rgb(0, 128, 0);
-                if (speed >= 10 && speed < 20) color = Color.YELLOW;
-                if (speed >= 20) color = Color.RED;
+                if (speed > 5) color = Color.rgb(0, 128, 0);
+                if (speed > 10) color = Color.YELLOW;
+                if (speed > 20) color = Color.RED;
 
                 Segment segment = new Segment();
                 segment.color = color;
@@ -120,6 +120,7 @@ public class MainActivity extends Activity implements EventListener {
                 polylines.add(polyline);
             }
         }
+        polyline.setPoints(arrayList);
         polylines.add(polyline);
 
         for (int i = 0; i < polylines.size(); i++) {
