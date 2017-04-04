@@ -27,7 +27,7 @@ import java.util.List;
 public class MainActivity extends Activity implements EventListener, View.OnClickListener {
 
     private String linkStart = "http://avionicus.com/android/track_v0649.php?avkey=1M1TE9oeWTDK6gFME9JYWXqpAGc%3D&hash=58ecdea2a91f32aa4c9a1d2ea010adcf2348166a04&track_id=";
-    private String trackId = "36131"; // Default value
+    private static String trackId = "36131"; // Default value
     private String linkEnd = "&user_id=22";
     private GetData getData;
     private IMapController mapController;
@@ -59,8 +59,8 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
         Button btnGo = (Button) findViewById(R.id.btnGo);
         btnGo.setOnClickListener(this);
 
+
         getData = new GetData(context, this);
-//        getData.get(buildLink(trackId));
     }
 
     private String buildLink(String id) {
@@ -95,11 +95,11 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
         for (int i = 0; i < vectors.size(); i++) {
             List<Double> points = vectors.get(i);
             for (int j = 0; j < points.size(); j++) {
-                Log.e("Avionikus", i + "." + j + ": ("
-                        + points.get(0) + ","
-                        + points.get(1) + ") speed: "
-                        + points.get(5)
-                );
+//                Log.e("Avionikus", i + "." + j + ": ("
+//                        + points.get(0) + ","
+//                        + points.get(1) + ") speed: "
+//                        + points.get(5)
+//                );
                 GeoPoint geoPoint = new GeoPoint(points.get(0), points.get(1));
                 double speed = points.get(5);
                 int color = getResources().getColor(R.color.col_spd_0);
@@ -151,6 +151,7 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
         polyline.setColor(color);
         return polyline;
     }
+
 
     private ArrayList<GeoPoint> getList() {
         return new ArrayList<>();
