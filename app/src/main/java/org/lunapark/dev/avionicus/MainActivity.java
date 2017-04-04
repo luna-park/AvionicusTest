@@ -71,7 +71,7 @@ public class MainActivity extends Activity implements EventListener {
 
     @Override
     public void onEvent(Avionikus avionikus) {
-        final List<List<Double>> vectors = avionikus.getAPoints();
+        List<List<Double>> vectors = avionikus.getAPoints();
         List<Double> points = null;
         ArrayList<Segment> segments = new ArrayList<>();
 
@@ -81,14 +81,14 @@ public class MainActivity extends Activity implements EventListener {
                 Log.e("Avionikus", i + "." + j + ": ("
                         + points.get(0) + ","
                         + points.get(1) + ") speed: " +
-                        +points.get(5)
+                        + points.get(5)
                 );
                 GeoPoint geoPoint = new GeoPoint(points.get(0), points.get(1));
                 double speed = points.get(5);
-                int color = Color.rgb(64, 224, 208);
-                if (speed > 5) color = Color.rgb(0, 128, 0);
-                if (speed > 10) color = Color.YELLOW;
-                if (speed > 20) color = Color.RED;
+                int color = getResources().getColor(R.color.col_spd_0);
+                if (speed > 5) color = getResources().getColor(R.color.col_spd_5);
+                if (speed > 10) color = getResources().getColor(R.color.col_spd_10);
+                if (speed > 20) color = getResources().getColor(R.color.col_spd_20);
 
                 Segment segment = new Segment();
                 segment.color = color;

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#40e0d0</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="col_spd_0">#40e0d0</color>
+    <color name="col_spd_5">#008000</color>
+    <color name="col_spd_10">#ffff00</color>
+    <color name="col_spd_20">#ff0000</color>
 </resources>
