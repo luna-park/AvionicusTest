@@ -1,5 +1,9 @@
 package org.lunapark.dev.avionicus.helpers;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -17,49 +21,49 @@ import java.util.concurrent.Executors;
  */
 
 public class GetData {
-
-    private EventListener eventListener;
     private final Runnable getJSON;
     private ExecutorService executorService;
     private String link;
+    private Context context;
 
-    public GetData(final EventListener eventListener) {
-        this.eventListener = eventListener;
+    public GetData(Context context, final EventListener eventListener) {
+        this.context = context;
         executorService = Executors.newCachedThreadPool();
 
         getJSON = new Runnable() {
 
             @Override
             public void run() {
-                HttpURLConnection urlConnection;
-                BufferedReader reader;
-                String resultJson;
+                if (isOnline()) {
+                    HttpURLConnection urlConnection;
+                    BufferedReader reader;
+                    String resultJson;
 
-                try {
-                    // TODO Check internet connection
-                    URL url = new URL(link);
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("GET");
-                    urlConnection.connect();
+                    try {
+                        URL url = new URL(link);
+                        urlConnection = (HttpURLConnection) url.openConnection();
+                        urlConnection.setRequestMethod("GET");
+                        urlConnection.connect();
 
-                    InputStream inputStream = urlConnection.getInputStream();
-                    StringBuilder buffer = new StringBuilder();
+                        InputStream inputStream = urlConnection.getInputStream();
+                        StringBuilder buffer = new StringBuilder();
 
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
+                        reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line);
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            buffer.append(line);
+                        }
+                        resultJson = buffer.toString();
+                        GsonBuilder builder = new GsonBuilder();
+                        Gson gson = builder.create();
+
+                        Avionikus avionikus = gson.fromJson(resultJson, Avionikus.class);
+                        eventListener.onEvent(avionikus);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    resultJson = buffer.toString();
-                    GsonBuilder builder = new GsonBuilder();
-                    Gson gson = builder.create();
-
-                    Avionikus avionikus = gson.fromJson(resultJson, Avionikus.class);
-                    eventListener.onEvent(avionikus);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
 
             }
@@ -73,5 +77,14 @@ public class GetData {
 
     public void dispose() {
         executorService.shutdown();
+    }
+
+    // Check network connection
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return (activeNetwork != null)
+                && activeNetwork.isConnectedOrConnecting();
     }
 }

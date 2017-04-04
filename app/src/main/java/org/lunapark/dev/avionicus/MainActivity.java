@@ -2,10 +2,13 @@ package org.lunapark.dev.avionicus;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 import org.lunapark.dev.avionicus.helpers.Avionikus;
 import org.lunapark.dev.avionicus.helpers.EventListener;
@@ -21,21 +24,24 @@ import org.osmdroid.views.overlay.Polyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity implements EventListener {
+public class MainActivity extends Activity implements EventListener, View.OnClickListener {
 
-    private String link = "http://avionicus.com/android/track_v0649.php?avkey=1M1TE9oeWTDK6gFME9JYWXqpAGc%3D&hash=58ecdea2a91f32aa4c9a1d2ea010adcf2348166a04&track_id=36131&user_id=22";
+    private String linkStart = "http://avionicus.com/android/track_v0649.php?avkey=1M1TE9oeWTDK6gFME9JYWXqpAGc%3D&hash=58ecdea2a91f32aa4c9a1d2ea010adcf2348166a04&track_id=";
+    private String trackId = "36131"; // Default value
+    private String linkEnd = "&user_id=22";
     private GetData getData;
     private IMapController mapController;
     private MapView map;
+    private EditText etTrackId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Context ctx = getApplicationContext();
+        Context context = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+        Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         setContentView(R.layout.activity_main);
 
         map = (MapView) findViewById(R.id.mvMain);
@@ -47,40 +53,51 @@ public class MainActivity extends Activity implements EventListener {
         mapController = map.getController();
         mapController.setZoom(15);
 
-        getData = new GetData(this);
-        getData.get(link);
+        etTrackId = (EditText) findViewById(R.id.etTrackId);
+        etTrackId.setText(String.valueOf(trackId));
 
+        Button btnGo = (Button) findViewById(R.id.btnGo);
+        btnGo.setOnClickListener(this);
 
+        getData = new GetData(context, this);
+//        getData.get(buildLink(trackId));
+    }
+
+    private String buildLink(String id) {
+        return linkStart + id + linkEnd;
+    }
+
+    @Override
+    protected void onPause() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Configuration.getInstance().save(this, prefs);
+        super.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().save(this, prefs);
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+        getData.get(buildLink(trackId));
     }
 
     @Override
-    protected void onStop() {
+    protected void onDestroy() {
         getData.dispose();
-        super.onStop();
+        super.onDestroy();
     }
 
     @Override
     public void onEvent(Avionikus avionikus) {
         List<List<Double>> vectors = avionikus.getAPoints();
-        List<Double> points = null;
         ArrayList<Segment> segments = new ArrayList<>();
 
         for (int i = 0; i < vectors.size(); i++) {
-            points = vectors.get(i);
+            List<Double> points = vectors.get(i);
             for (int j = 0; j < points.size(); j++) {
                 Log.e("Avionikus", i + "." + j + ": ("
                         + points.get(0) + ","
-                        + points.get(1) + ") speed: " +
+                        + points.get(1) + ") speed: "
                         + points.get(5)
                 );
                 GeoPoint geoPoint = new GeoPoint(points.get(0), points.get(1));
@@ -97,13 +114,12 @@ public class MainActivity extends Activity implements EventListener {
                 segments.add(segment);
             }
         }
-        if (points != null) {
-            GeoPoint startPoint = new GeoPoint(points.get(0), points.get(1));
-            mapController.animateTo(startPoint);
-        }
 
+        // Go to the 1st point
+        mapController.animateTo(segments.get(0).geoPoint);
+
+        // Build color path
         ArrayList<Polyline> polylines = new ArrayList<>();
-
         int color = segments.get(0).color;
         Polyline polyline = getPolyline(color);
         ArrayList<GeoPoint> arrayList = getList();
@@ -138,5 +154,11 @@ public class MainActivity extends Activity implements EventListener {
 
     private ArrayList<GeoPoint> getList() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public void onClick(View v) {
+        trackId = String.valueOf(etTrackId.getText());
+        getData.get(buildLink(trackId));
     }
 }

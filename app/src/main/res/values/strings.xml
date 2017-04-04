@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Avionicus</string>
+    <string name="txt_track_id">Track id:</string>
+    <string name="btn_go">Go</string>
 
 </resources>
