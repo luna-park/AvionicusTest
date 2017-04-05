@@ -14,6 +14,56 @@
         android:layout_alignParentTop="true"
         android:text="@string/btn_go" />
 
+
+    <GridLayout
+        android:id="@+id/gridSpeed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnGo"
+        android:columnCount="2"
+        android:rowCount="3">
+
+        <TextView
+            android:id="@+id/tvTitleLo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/txt_lo_spd" />
+
+        <EditText
+            android:id="@+id/etSpeedLow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/tvTitleMid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/txt_mi_spd" />
+
+        <EditText
+            android:id="@+id/etSpeedMiddle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/tvTitleHi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/txt_hi_spd" />
+
+        <EditText
+            android:id="@+id/etSpeedHigh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number" />
+
+    </GridLayout>
+
     <TextView
         android:id="@+id/tvTrackId"
         android:layout_width="wrap_content"
@@ -29,11 +79,9 @@
         android:id="@+id/etTrackId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/btnGo"
-        android:layout_alignBottom="@+id/btnGo"
-        android:layout_toLeftOf="@+id/btnGo"
         android:ems="10"
         android:inputType="number"
+        android:layout_toLeftOf="@+id/btnGo"
         android:layout_toRightOf="@+id/tvTrackId"
         android:layout_toEndOf="@+id/tvTrackId" />
 
@@ -41,6 +89,6 @@
         android:id="@+id/mvMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btnGo" />
+        android:layout_below="@+id/gridSpeed" />
 
 </RelativeLayout>

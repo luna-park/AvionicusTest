@@ -26,13 +26,15 @@ import java.util.List;
 
 public class MainActivity extends Activity implements EventListener, View.OnClickListener {
 
+    private String TAG = "Avionicus test app";
     private String linkStart = "http://avionicus.com/android/track_v0649.php?avkey=1M1TE9oeWTDK6gFME9JYWXqpAGc%3D&hash=58ecdea2a91f32aa4c9a1d2ea010adcf2348166a04&track_id=";
     private static String trackId = "36131"; // Default value
     private String linkEnd = "&user_id=22";
     private GetData getData;
     private IMapController mapController;
     private MapView map;
-    private EditText etTrackId;
+    private EditText etTrackId, etSpeedLo, etSpeedMid, etSpeedHi;
+    private int speedLow, speedMiddle, speedHigh; // Speed values
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +58,19 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
         etTrackId = (EditText) findViewById(R.id.etTrackId);
         etTrackId.setText(String.valueOf(trackId));
 
+        etSpeedLo = (EditText) findViewById(R.id.etSpeedLow);
+        etSpeedMid = (EditText) findViewById(R.id.etSpeedMiddle);
+        etSpeedHi = (EditText) findViewById(R.id.etSpeedHigh);
+
+        // Default
+        speedLow = 5;
+        speedMiddle = 10;
+        speedHigh = 20;
+
+        refreshSpeedEt();
+
         Button btnGo = (Button) findViewById(R.id.btnGo);
         btnGo.setOnClickListener(this);
-
-
         getData = new GetData(context, this);
     }
 
@@ -89,23 +100,35 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
 
     @Override
     public void onEvent(Avionikus avionikus) {
+        // Строим путь
+        ArrayList<Polyline> path = buildPath(avionikus);
+
+        // Рисуем новый путь на карте
+        for (int i = 0; i < path.size(); i++) {
+            map.getOverlays().add(path.get(i));
+        }
+        map.invalidate();
+    }
+
+    @Override
+    public void onFailure() {
+        Log.e(TAG, "shit goes down");
+    }
+
+    private ArrayList<Polyline> buildPath(Avionikus avionikus) {
+        ArrayList<Polyline> polylines = new ArrayList<>();
         List<List<Double>> vectors = avionikus.getAPoints();
         ArrayList<Segment> segments = new ArrayList<>();
 
         for (int i = 0; i < vectors.size(); i++) {
             List<Double> points = vectors.get(i);
             for (int j = 0; j < points.size(); j++) {
-//                Log.e("Avionikus", i + "." + j + ": ("
-//                        + points.get(0) + ","
-//                        + points.get(1) + ") speed: "
-//                        + points.get(5)
-//                );
                 GeoPoint geoPoint = new GeoPoint(points.get(0), points.get(1));
                 double speed = points.get(5);
                 int color = getResources().getColor(R.color.col_spd_0);
-                if (speed > 5) color = getResources().getColor(R.color.col_spd_5);
-                if (speed > 10) color = getResources().getColor(R.color.col_spd_10);
-                if (speed > 20) color = getResources().getColor(R.color.col_spd_20);
+                if (speed > speedLow) color = getResources().getColor(R.color.col_spd_low);
+                if (speed > speedMiddle) color = getResources().getColor(R.color.col_spd_middle);
+                if (speed > speedHigh) color = getResources().getColor(R.color.col_spd_high);
 
                 Segment segment = new Segment();
                 segment.color = color;
@@ -119,30 +142,25 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
         mapController.animateTo(segments.get(0).geoPoint);
 
         // Build color path
-        ArrayList<Polyline> polylines = new ArrayList<>();
         int color = segments.get(0).color;
         Polyline polyline = getPolyline(color);
-        ArrayList<GeoPoint> arrayList = getList();
+        ArrayList<GeoPoint> geoPoints = new ArrayList<>();
         polylines.add(polyline);
 
         for (int i = 1; i < segments.size(); i++) {
             GeoPoint geoPoint = segments.get(i).geoPoint;
-            arrayList.add(geoPoint);
+            geoPoints.add(geoPoint);
             if (color != segments.get(i).color) {
-                polyline.setPoints(arrayList);
+                polyline.setPoints(geoPoints);
                 color = segments.get(i).color;
                 polyline = getPolyline(color);
-                arrayList = getList();
+                geoPoints = new ArrayList<>();
                 polylines.add(polyline);
             }
         }
-        polyline.setPoints(arrayList);
+        polyline.setPoints(geoPoints);
         polylines.add(polyline);
-
-        for (int i = 0; i < polylines.size(); i++) {
-            map.getOverlays().add(polylines.get(i));
-        }
-
+        return polylines;
     }
 
     private Polyline getPolyline(int color) {
@@ -152,14 +170,35 @@ public class MainActivity extends Activity implements EventListener, View.OnClic
         return polyline;
     }
 
-
-    private ArrayList<GeoPoint> getList() {
-        return new ArrayList<>();
-    }
-
     @Override
     public void onClick(View v) {
+        correctSpeedValues();
+        // Удаляем предыдущие пути
+        map.getOverlays().clear();
+        // Запрос новых данных
         trackId = String.valueOf(etTrackId.getText());
         getData.get(buildLink(trackId));
+    }
+
+    private void refreshSpeedEt() {
+        etSpeedLo.setText(String.valueOf(speedLow));
+        etSpeedMid.setText(String.valueOf(speedMiddle));
+        etSpeedHi.setText(String.valueOf(speedHigh));
+    }
+
+    private void correctSpeedValues() {
+        int spdLo = Integer.parseInt(etSpeedLo.getText().toString());
+        int spdMd = Integer.parseInt(etSpeedMid.getText().toString());
+        int spdHi = Integer.parseInt(etSpeedHi.getText().toString());
+
+        if (spdLo <= 0) spdLo = 1;
+        if (spdMd <= spdLo) spdMd = spdLo + 1;
+        if (spdHi <= spdMd) spdHi = spdMd + 1;
+
+        speedLow = spdLo;
+        speedMiddle = spdMd;
+        speedHigh = spdHi;
+
+        refreshSpeedEt();
     }
 }

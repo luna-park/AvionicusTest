@@ -7,6 +7,8 @@ import android.net.NetworkInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.osmdroid.views.overlay.Polyline;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -63,7 +65,10 @@ public class GetData {
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        eventListener.onFailure();
                     }
+                } else {
+                    eventListener.onFailure();
                 }
 
             }
